@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct TextData {
@@ -44,6 +45,7 @@ pub enum NodeType {
     DocumentType(DocumentTypeData),
 }
 
+#[derive(Debug)]
 pub struct Node {
     children: Vec<Box<Node>>,
     node_type: NodeType,
@@ -120,27 +122,34 @@ pub fn document_tree(root_node: Node) -> Document {
 }
 
 pub fn pretty_print_tree(root: Node) {
-    fn dfs(root: &Node, root_string: &mut String) {
-        if root.children.len() == 0 {
-            print!("{}\n", root_string);
-        } else {
-            // add carret for prettier print
-            if root_string.len() > 0 {
-                let last_line: &str = root_string.lines().last().unwrap();
-                let indentation: usize = last_line.len() / 2;
-                let space = " ".repeat(indentation);
-                let carret = format!("\n{}|__ ", space);
-                root_string.push_str(&carret);
-            }
+    fn dfs(root: &Node, root_string: &mut String, visited: &mut HashSet<String>) {
+        let node_repr: String = format!("node: {:?} ", root.node_type);
+        // check if the node was already visited
+        if !visited.contains(&node_repr) {
+            root_string.push_str(&node_repr);
 
-            root_string.push_str(&format!("node: {:?} ", root.node_type));
+            if root.children.len() == 0 {
+                print!("{}\n", root_string);
+            } else {
+                // add carret for prettier print
+                if root_string.len() > 0 {
+                    let last_line: &str = root_string.lines().last().unwrap();
+                    let indentation: usize = last_line.len() / 2;
+                    let space = " ".repeat(indentation);
+                    let carret = format!("\n{}|__ ", space);
+                    root_string.push_str(&carret);
+                }
 
-            for node in root.children.iter() {
-                dfs(node, root_string);
+                visited.insert(node_repr);
+
+                for node in root.children.iter() {
+                    dfs(node, root_string, visited);
+                }
             }
         }
     }
 
     let mut result_string = String::from("");
-    dfs(&root, &mut result_string);
+    let mut visited: HashSet<String> = HashSet::new();
+    dfs(&root, &mut result_string, &mut visited);
 }

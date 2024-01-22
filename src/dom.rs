@@ -128,9 +128,7 @@ pub fn pretty_print_tree(root: Node) {
         if !visited.contains(&node_repr) {
             root_string.push_str(&node_repr);
 
-            if root.children.len() == 0 {
-                print!("{}\n", root_string);
-            } else {
+            if ! (root.children.len() == 0) {
                 // add carret for prettier print
                 if root_string.len() > 0 {
                     let last_line: &str = root_string.lines().last().unwrap();
@@ -152,4 +150,5 @@ pub fn pretty_print_tree(root: Node) {
     let mut result_string = String::from("");
     let mut visited: HashSet<String> = HashSet::new();
     dfs(&root, &mut result_string, &mut visited);
+    print!("{}\n", result_string);
 }

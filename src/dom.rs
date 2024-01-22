@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::{format, Display};
 
 #[derive(Debug)]
 pub struct TextData {
@@ -105,13 +104,13 @@ pub fn attr_node(
     Node {
         children: Vec::new(),
         node_type: NodeType::Attr(AttrData {
-            namespace_uri: namespace_uri,
-            prefix: prefix,
-            local_name: local_name,
-            name: name,
-            value: value,
-            owner_element: owner_element,
-            specified: specified,
+            namespace_uri,
+            prefix,
+            local_name,
+            name,
+            value,
+            owner_element,
+            specified,
         }),
     }
 }
@@ -120,16 +119,21 @@ pub fn document_tree(root_node: Node) -> Document {
     Document { root: root_node }
 }
 
-pub trait PrettyPrint {
-    fn pretty_print(&self) -> String;
-}
-
 pub fn pretty_print_tree(root: Node) {
     fn dfs(root: &Node, root_string: &mut String) {
         if root.children.len() == 0 {
             print!("{}\n", root_string);
         } else {
-            root_string.push_str(&format!("node: {:?}", root.node_type));
+            // add carret for prettier print
+            if root_string.len() > 0 {
+                let last_line: &str = root_string.lines().last().unwrap();
+                let indentation: usize = last_line.len() / 2;
+                let space = " ".repeat(indentation);
+                let carret = format!("\n{}|__ ", space);
+                root_string.push_str(&carret);
+            }
+
+            root_string.push_str(&format!("node: {:?} ", root.node_type));
 
             for node in root.children.iter() {
                 dfs(node, root_string);

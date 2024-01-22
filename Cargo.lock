@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "toy-rust-browser"
+name = "brother"
 version = "0.1.0"

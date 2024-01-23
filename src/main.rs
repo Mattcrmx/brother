@@ -1,4 +1,5 @@
 pub mod dom;
+pub mod parser;
 use dom::{comment_node, pretty_print_tree, Node};
 
 fn main() {

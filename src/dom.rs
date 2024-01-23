@@ -121,19 +121,18 @@ pub fn document_tree(root_node: Node) -> Document {
     Document { root: root_node }
 }
 
-
 fn get_indentation_carret(base: &str, depth: usize) -> String {
-    dbg!(depth);
+    println!("*******");
     let base_line: &str = base.lines().nth(depth).unwrap();
+    println!("{:?}", base_line);
     let space = " ".repeat(base_line.len() / 2);
-    
+
     format!("\n{}|__ ", space)
 }
 
-
 pub fn pretty_print_tree(root: Node) {
-    fn dfs(root: &Node, root_string: &mut String, visited: &mut HashSet<String>, depth: &mut usize) {
-        let node_repr: String = format!("node: {:?} ", root.node_type);
+    fn dfs(root: &Node, root_string: &mut String, visited: &mut HashSet<String>, depth: usize) {
+        let node_repr: String = format!("{:?} ", root.node_type);
 
         // check if the node was already visited
         if !visited.contains(&node_repr) {
@@ -141,18 +140,20 @@ pub fn pretty_print_tree(root: Node) {
             // increase depth and push current node representation
             root_string.push_str(&node_repr);
 
-            if ! (root.children.len() == 0) {
+            // add carret for prettier print
+            if root_string.len() > 0 {
+                let carret = get_indentation_carret(&root_string, depth);
+                root_string.push_str(&carret);
+            }
 
-                // add carret for prettier print
-                if root_string.len() > 0 {
-                    let carret = get_indentation_carret(&root_string, *depth);
-                    root_string.push_str(&carret);
-                }
-                
+            let new_depth: usize = depth + 1;
+
+
+            if !(root.children.len() == 0) {
                 visited.insert(node_repr);
 
                 for node in root.children.iter() {
-                    dfs(node, root_string, visited, depth);
+                    dfs(node, root_string, visited, new_depth);
                 }
             }
         }
@@ -160,7 +161,7 @@ pub fn pretty_print_tree(root: Node) {
 
     let mut result_string = String::from("");
     let mut visited: HashSet<String> = HashSet::new();
-    let mut depth: usize = 0;
-    dfs(&root, &mut result_string, &mut visited, &mut depth);
+    let depth: usize = 0;
+    dfs(&root, &mut result_string, &mut visited, depth);
     print!("{}\n", result_string);
 }

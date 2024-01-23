@@ -122,11 +122,8 @@ pub fn document_tree(root_node: Node) -> Document {
 }
 
 fn get_indentation_carret(base: &str, depth: usize) -> String {
-    println!("*******");
     let base_line: &str = base.lines().nth(depth).unwrap();
-    println!("{:?}", base_line);
     let space = " ".repeat(base_line.len() / 2);
-
     format!("\n{}|__ ", space)
 }
 
@@ -136,25 +133,23 @@ pub fn pretty_print_tree(root: Node) {
 
         // check if the node was already visited
         if !visited.contains(&node_repr) {
-
-            // increase depth and push current node representation
             root_string.push_str(&node_repr);
 
             // add carret for prettier print
-            if root_string.len() > 0 {
-                let carret = get_indentation_carret(&root_string, depth);
-                root_string.push_str(&carret);
-            }
-
-            let new_depth: usize = depth + 1;
-
 
             if !(root.children.len() == 0) {
+                let new_depth: usize = depth + 1;
+
                 visited.insert(node_repr);
 
                 for node in root.children.iter() {
+                    let carret = get_indentation_carret(&root_string, depth);
+                    root_string.push_str(&carret);
+
                     dfs(node, root_string, visited, new_depth);
                 }
+            } else {
+                root_string.push_str("\n");
             }
         }
     }

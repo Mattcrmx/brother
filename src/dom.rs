@@ -70,12 +70,12 @@ pub fn text_node(data: String) -> Node {
     }
 }
 
-pub fn element_node(tag: String, attributes: HashMap<String, String>) -> Node {
+pub fn element_node(tag_name: String, attributes: HashMap<String, String>) -> Node {
     Node {
         children: Vec::new(),
         node_type: NodeType::Element(ElementData {
-            tag_name: tag,
-            attributes: attributes,
+            tag_name,
+            attributes,
         }),
     }
 }

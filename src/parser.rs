@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::dom::{self, Node};
+use crate::dom::{self, element_node, Node};
 
 pub struct HTMLParser {
     position: usize,
@@ -10,6 +10,18 @@ pub struct HTMLParser {
 impl HTMLParser {
     fn eol(&self) -> bool {
         self.position >= self.input.len()
+    }
+
+    fn starts_with(&self, s: &str) -> bool {
+        self.input[self.position..].starts_with(s)
+    }
+
+    fn ends_with(&self, s: &str) -> bool {
+        self.input[self.position..].ends_with(s)
+    }
+
+    fn get_current_char(&self) -> char {
+        self.input.chars().nth(self.position).unwrap()
     }
 
     fn get_next_char(&self) -> Option<char> {
@@ -65,45 +77,77 @@ impl HTMLParser {
         self.consume_chars_while(|c| c.is_whitespace());
     }
 
-    pub fn parse_tag_name(&mut self) -> String {
-        assert!(self.get_next_char().unwrap() == '<');
-        self.consume_chars_while(|c| c.is_alphanumeric() && c != '>')
+    fn parse_text_data(&mut self) -> String {
+        self.consume_chars_while(|c| c.is_alphanumeric())
     }
 
-    fn _parse_text_data(&mut self) -> String {
-        self.consume_chars_while(|c| c.is_alphanumeric() && c != '<')
+    pub fn parse_tag_name(&mut self) -> String {
+        assert!(self.get_current_char() == '<');
+        // consume first char to only get the tag name
+        self.consume_char();
+        self.parse_text_data()
     }
 
     pub fn parse_text_node(&mut self) -> Node {
-        dom::text_node(self._parse_text_data())
+        dom::text_node(self.parse_text_data())
     }
 
     pub fn parse_comment_node(&mut self) -> Node {
-        dom::comment_node(self._parse_text_data())
+        dom::comment_node(self.parse_text_data())
     }
 
     pub fn parse_processing_instruction_node(&mut self) -> Node {
-        dom::processing_instruction_node(self._parse_text_data())
+        dom::processing_instruction_node(self.parse_text_data())
+    }
+
+    pub fn parse_nodes(&mut self) -> Vec<Box<Node>> {
+        let mut nodes = Vec::new();
+        loop {
+            if self.eol() || self.starts_with("</") {
+                break;
+            }
+            nodes.push(Box::new(self.parse_element_node()));
+        }
+        nodes
     }
 
     pub fn parse_element_node(&mut self) -> Node {
         // parse tag name
         // start by the '<' character
-        let full_tag = self.consume_chars_while(|c| c != '>');
-        let mut tag_iter = full_tag.split(" ");
-        let tag_name = tag_iter.next().unwrap();
-        let mut attrs: HashMap<String, String> = HashMap::new(); // we know the tag will be the first element
+        let tag_name = self.parse_tag_name();
+        let attrs = self.parse_element_attributes();
 
-        for pair in tag_iter {
-            let (attr, val) = pair.split_once("=").unwrap();
-            attrs.insert(attr.to_string(), val.to_string());
+        // parse tag end
+        assert!(self.consume_char() == '>');
+
+        let children = self.parse_nodes();
+        dbg!(attrs.clone());
+
+        // Check for tag closing
+        assert!(self.consume_char() == '<');
+        assert!(self.consume_char() == '/');
+        assert!(self.parse_tag_name() == tag_name);
+        assert!(self.consume_char() == '>');
+
+        element_node(tag_name, attrs, children)
+    }
+
+    fn parse_element_attributes(&mut self) -> HashMap<String, String> {
+        let mut attrs: HashMap<String, String> = HashMap::new();
+        let cur_char = self.get_current_char();
+        match cur_char {
+            '>' => attrs,
+            _ => {
+                self.consume_char(); // consume the first whitespace
+                let cur = self.consume_chars_while(|c| c != '>');
+                let all_pairs = cur.split(" ");
+                for pair in all_pairs {
+                    let (attr, val) = pair.split_once("=").unwrap();
+                    attrs.insert(attr.to_string(), val.to_string());
+                }
+                attrs
+            }
         }
-
-        let mut elem = dom::element_node(tag_name.to_string(), attrs.clone());
-
-        // add children recursively
-        dbg!(attrs);
-        elem
     }
 }
 

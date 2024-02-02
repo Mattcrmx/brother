@@ -70,9 +70,9 @@ pub fn text_node(data: String) -> Node {
     }
 }
 
-pub fn element_node(tag_name: String, attributes: HashMap<String, String>) -> Node {
+pub fn element_node(tag_name: String, attributes: HashMap<String, String>, children: Vec<Box<Node>>) -> Node {
     Node {
-        children: Vec::new(),
+        children,
         node_type: NodeType::Element(ElementData {
             tag_name,
             attributes,

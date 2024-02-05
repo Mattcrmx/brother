@@ -1,4 +1,4 @@
-use brother::dom::{comment_node, pretty_print_tree, Node, processing_instruction_node};
+use brother::dom::{comment_node, pretty_print_tree, processing_instruction_node, Node};
 
 #[test]
 fn test_pretty_print() {
@@ -11,9 +11,9 @@ fn test_pretty_print() {
 
     c3.add_child(c4);
     c2.add_child(c3);
-    
+
     c1.add_child(p1);
-    
+
     root.add_child(c1);
     root.add_child(c2);
     pretty_print_tree(root);

@@ -1,4 +1,4 @@
-use brother::parser::parser;
+use brother::{dom::pretty_print_tree, parser::parser};
 
 #[test]
 fn test_tag_name_parsing() {
@@ -9,7 +9,7 @@ fn test_tag_name_parsing() {
 }
 
 #[test]
-fn test_element_node_parsing() {
+fn test_document_parsing() {
     let test_string = "<html>
     <body>
         <h1>Title</h1>
@@ -19,8 +19,8 @@ fn test_element_node_parsing() {
     </body>
 </html>";
     let mut test_parser = parser(test_string.to_string());
-
-    test_parser.parse_element_node();
+    let root = test_parser.parse_document();
+    pretty_print_tree(root)
 }
 
 #[test]

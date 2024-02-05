@@ -47,7 +47,7 @@ pub enum NodeType {
 
 #[derive(Debug, Clone)]
 pub struct Node {
-    children: Vec<Box<Node>>,
+    pub children: Vec<Box<Node>>,
     pub node_type: NodeType,
 }
 

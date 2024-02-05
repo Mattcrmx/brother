@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 use crate::dom::{self, element_node, Node, NodeType};
 
@@ -58,6 +58,11 @@ impl HTMLParser {
         char_iter.next().unwrap()
     }
 
+    fn consume_sequence(&mut self, s: String) -> String {
+        assert!(self.input[self.position..s.len()] == s);
+        s
+    }
+
     fn consume_chars_while<F>(&mut self, predicate: F) -> String
     where
         F: Fn(char) -> bool,
@@ -114,11 +119,7 @@ impl HTMLParser {
 
     pub fn parse_element_node(&mut self) -> Node {
         // parse tag name
-        assert!(self.consume_char() == '<');
-        let tag_name = self.parse_tag_name();
-        let attrs = self.parse_element_attributes();
-        assert!(self.consume_char() == '>');
-        
+        let (tag_name, attrs) = self.consume_element_tag();
         let children = self.parse_nodes();
 
         // Check for tag closing
@@ -146,6 +147,24 @@ impl HTMLParser {
                 attrs
             }
         }
+    }
+
+    fn consume_element_tag(&mut self) -> (String, HashMap<String, String>) {
+        assert!(self.consume_char() == '<');
+        let tag_name = self.parse_tag_name();
+        let attrs = self.parse_element_attributes();
+        assert!(self.consume_char() == '>');
+        (tag_name, attrs)
+    }
+
+    pub fn parse_document(&mut self) -> Node {
+        // parse a document and return the root node
+        // parse the root html node
+        let (document_tag, document_attributes) = self.consume_element_tag();
+        assert!(document_tag == "html");
+
+        let all_nodes = self.parse_nodes();
+        element_node(document_tag, document_attributes, all_nodes)
     }
 }
 

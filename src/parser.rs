@@ -1,6 +1,5 @@
-use std::{collections::HashMap, fmt::format};
-
-use crate::dom::{self, element_node, Node, NodeType};
+use std::collections::HashMap;
+use crate::dom::{self, element_node, Node};
 
 pub struct HTMLParser {
     position: usize,

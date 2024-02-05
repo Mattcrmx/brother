@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::dom::{self, element_node, Node};
+use crate::dom::{self, element_node, Node, NodeType};
 
 pub struct HTMLParser {
     position: usize,
@@ -10,6 +10,10 @@ pub struct HTMLParser {
 impl HTMLParser {
     fn eol(&self) -> bool {
         self.position >= self.input.len()
+    }
+
+    fn state(&self) -> &str {
+        &self.input[self.position..]
     }
 
     fn starts_with(&self, s: &str) -> bool {
@@ -59,15 +63,9 @@ impl HTMLParser {
         F: Fn(char) -> bool,
     {
         let mut result = String::from("");
-        let mut cons: bool = true;
 
         // loop through the input
-        while !self.eol() && cons {
-            let next_char = self.get_next_char();
-            cons = match next_char {
-                Some(c) => predicate(c),
-                None => false,
-            };
+        while !self.eol() && predicate(self.get_current_char()) {
             result.push(self.consume_char());
         }
         return result;
@@ -78,14 +76,11 @@ impl HTMLParser {
     }
 
     fn parse_text_data(&mut self) -> String {
-        self.consume_chars_while(|c| c.is_alphanumeric())
+        self.consume_chars_while(|c| c != '<')
     }
 
     pub fn parse_tag_name(&mut self) -> String {
-        assert!(self.get_current_char() == '<');
-        // consume first char to only get the tag name
-        self.consume_char();
-        self.parse_text_data()
+        self.consume_chars_while(|c| c.is_alphanumeric())
     }
 
     pub fn parse_text_node(&mut self) -> Node {
@@ -103,25 +98,28 @@ impl HTMLParser {
     pub fn parse_nodes(&mut self) -> Vec<Box<Node>> {
         let mut nodes = Vec::new();
         loop {
+            self.remove_whitespaces();
             if self.eol() || self.starts_with("</") {
                 break;
             }
-            nodes.push(Box::new(self.parse_element_node()));
+            // for the moment, a node is either an element or a text node
+            let node = match self.get_current_char() {
+                '<' => self.parse_element_node(),
+                _ => self.parse_text_node(),
+            };
+            nodes.push(Box::new(node));
         }
         nodes
     }
 
     pub fn parse_element_node(&mut self) -> Node {
         // parse tag name
-        // start by the '<' character
+        assert!(self.consume_char() == '<');
         let tag_name = self.parse_tag_name();
         let attrs = self.parse_element_attributes();
-
-        // parse tag end
         assert!(self.consume_char() == '>');
-
+        
         let children = self.parse_nodes();
-        dbg!(attrs.clone());
 
         // Check for tag closing
         assert!(self.consume_char() == '<');

@@ -1,30 +1,30 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TextData {
     data: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ElementData {
     tag_name: String,
     attributes: HashMap<String, String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DocumentTypeData {
     name: String,
     public_id: String,
     system_id: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcessingInstructionData {
     target: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AttrData {
     namespace_uri: String,
     prefix: String,
@@ -35,7 +35,7 @@ pub struct AttrData {
     specified: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NodeType {
     Text(TextData),
     Element(ElementData),
@@ -45,10 +45,10 @@ pub enum NodeType {
     DocumentType(DocumentTypeData),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node {
     children: Vec<Box<Node>>,
-    node_type: NodeType,
+    pub node_type: NodeType,
 }
 
 impl Node {
@@ -66,7 +66,7 @@ pub struct Document {
 pub fn text_node(data: String) -> Node {
     Node {
         children: Vec::new(),
-        node_type: NodeType::Text(TextData { data: data }),
+        node_type: NodeType::Text(TextData { data }),
     }
 }
 

@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::dom::{self, element_node, Node};
+use std::collections::HashMap;
 
 pub struct HTMLParser {
     position: usize,
@@ -27,25 +27,6 @@ impl HTMLParser {
         self.input.chars().nth(self.position).unwrap()
     }
 
-    fn get_next_char(&self) -> Option<char> {
-        // return None if we reach the end of the word
-        // doesn't consume the char
-        if !self.eol() {
-            self.input.chars().nth(self.position + 1)
-        } else {
-            None
-        }
-    }
-
-    fn peek(&self, offset: usize) -> Option<char> {
-        let new_position: usize = self.position + offset;
-        if new_position < self.input[self.position..].len() {
-            self.input.chars().nth(new_position)
-        } else {
-            None
-        }
-    }
-
     fn consume_char(&mut self) -> char {
         if self.eol() {
             panic!("Trying to consume character when end of input is reached");
@@ -55,11 +36,6 @@ impl HTMLParser {
         self.position += 1;
 
         char_iter.next().unwrap()
-    }
-
-    fn consume_sequence(&mut self, s: String) -> String {
-        assert!(self.input[self.position..s.len()] == s);
-        s
     }
 
     fn consume_chars_while<F>(&mut self, predicate: F) -> String
@@ -83,23 +59,23 @@ impl HTMLParser {
         self.consume_chars_while(|c| c != '<')
     }
 
-    pub fn parse_tag_name(&mut self) -> String {
+    fn parse_tag_name(&mut self) -> String {
         self.consume_chars_while(|c| c.is_alphanumeric())
     }
 
-    pub fn parse_text_node(&mut self) -> Node {
+    fn parse_text_node(&mut self) -> Node {
         dom::text_node(self.parse_text_data())
     }
 
-    pub fn parse_comment_node(&mut self) -> Node {
+    fn parse_comment_node(&mut self) -> Node {
         dom::comment_node(self.parse_text_data())
     }
 
-    pub fn parse_processing_instruction_node(&mut self) -> Node {
+    fn parse_processing_instruction_node(&mut self) -> Node {
         dom::processing_instruction_node(self.parse_text_data())
     }
 
-    pub fn parse_nodes(&mut self) -> Vec<Box<Node>> {
+    fn parse_nodes(&mut self) -> Vec<Box<Node>> {
         let mut nodes = Vec::new();
         loop {
             self.remove_whitespaces();
@@ -116,7 +92,7 @@ impl HTMLParser {
         nodes
     }
 
-    pub fn parse_element_node(&mut self) -> Node {
+    fn parse_element_node(&mut self) -> Node {
         // parse tag name
         let (tag_name, attrs) = self.consume_element_tag();
         let children = self.parse_nodes();
@@ -174,36 +150,26 @@ pub fn parser(input: String) -> HTMLParser {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn test_next_char() {
-        let test_parser = parser(String::from("toto"));
-        let c = test_parser.get_next_char().unwrap();
-        assert!(c == 'o');
-        let c2 = test_parser.get_next_char().unwrap();
-        assert!(c2 == 'o');
-    }
-
-    #[test]
-    fn test_no_next_char() {
-        let mut test_parser = parser(String::from("to"));
-        let c = test_parser.get_next_char();
-        assert!(c == Some('o'));
-        test_parser.position += 1;
-        let c2 = test_parser.get_next_char();
-        assert!(c2 == None);
-    }
-
-    #[test]
-    fn test_peek() {
-        let test_parser = parser(String::from("toto"));
-        assert!(test_parser.peek(2) == Some('t'));
-        assert!(test_parser.peek(25) == None);
-    }
 
     #[test]
     fn test_whitespace_removal() {
         let mut test_parser = parser(String::from("    toto"));
         test_parser.remove_whitespaces();
         assert!(test_parser.input[test_parser.position..] == String::from("toto"));
+    }
+
+    #[test]
+    fn test_tag_name_parsing() {
+        let test_string = "html";
+        let mut test_parser = parser(test_string.to_string());
+        let first_tag = test_parser.parse_tag_name();
+        assert!(first_tag == "html");
+    }
+
+    #[test]
+    fn test_element_node_simple() {
+        let test_string = "<div>Toto</div>";
+        let mut test_parser = parser(test_string.to_string());
+        test_parser.parse_element_node();
     }
 }

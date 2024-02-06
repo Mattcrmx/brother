@@ -1,4 +1,4 @@
-use brother::{dom::pretty_print_tree, parser::parser};
+use brother::{dom::pretty_print_tree, html::HTMLParser};
 
 #[test]
 fn test_document_parsing() {
@@ -10,7 +10,7 @@ fn test_document_parsing() {
         </div>
     </body>
 </html>";
-    let mut test_parser = parser(test_string.to_string());
+    let mut test_parser = HTMLParser::new(test_string.to_string());
     let root = test_parser.parse_document();
     pretty_print_tree(root)
 }

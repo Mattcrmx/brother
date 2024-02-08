@@ -1,3 +1,5 @@
+use std::io::Split;
+
 pub struct TextParser {
     position: usize,
     input: String,
@@ -13,7 +15,7 @@ impl TextParser {
         self.position >= self.input.len()
     }
 
-    fn _state(&self) -> &str {
+    pub fn _state(&self) -> &str {
         &self.input[self.position..]
     }
 
@@ -23,6 +25,10 @@ impl TextParser {
 
     fn _ends_with(&self, s: &str) -> bool {
         self.input[self.position..].ends_with(s)
+    }
+
+    pub fn split_on(&self, separator: char) -> std::str::Split<'_, char> {
+        self.input.split(separator)
     }
 
     pub fn get_current_char(&self) -> char {
@@ -46,12 +52,45 @@ impl TextParser {
     {
         let mut result = String::from("");
 
-        // loop through the input
         while !self.eol() && predicate(self.get_current_char()) {
             result.push(self.consume_char());
         }
         return result;
     }
+
+    pub fn consume_sequence<F, G>(&mut self, predicate: F, discard: G, drop_last: bool) -> String
+    where
+        F: Fn(char) -> bool,
+        G: Fn(char) -> bool,
+    {
+        let mut result = String::from("");
+
+        while !self.eol() && predicate(self.get_current_char()) {
+            let cur = self.consume_char();
+            if !discard(cur) {
+                result.push(cur);
+            }
+        }
+
+        if drop_last {
+            self.consume_char();
+        }
+
+        result
+    }
+
+
+    pub fn consume_pattern(&mut self, pat: String) -> String {
+        // consume pattern and advances the position pointer
+        let target_position = self.position + pat.len();
+        assert!(self.input[self.position..target_position] == pat);
+
+        while self.position < target_position {
+            self.consume_char();
+        }
+        pat
+    }
+
 
     pub fn remove_whitespaces(&mut self) {
         self.consume_chars_while(|c| c.is_whitespace());

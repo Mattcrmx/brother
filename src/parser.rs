@@ -111,4 +111,39 @@ mod tests {
         test_parser.remove_whitespaces();
         assert!(test_parser.input[test_parser.position..] == String::from("toto"));
     }
+
+    #[test]
+    fn test_consume_char() {
+        let mut test_parser = TextParser::new(String::from("toto"));
+        assert!(test_parser.consume_char() == 't');
+    }
+    
+    #[test]
+    #[should_panic(expected = "Trying to consume character when end of input is reached")]
+    fn test_panic_eol() {
+        let mut test_parser = TextParser::new(String::from(""));
+        test_parser.consume_char();
+    }
+
+    #[test]
+    fn test_basic_operations() {
+        let test_parser = TextParser::new(String::from("toto"));
+        assert!(test_parser.get_current_char() == 't');
+        assert!(test_parser.starts_with("tot"));
+    }
+
+    #[test]
+    fn test_consum_while() {
+        let mut test_parser = TextParser::new(String::from("toto: tata;"));
+        assert!(test_parser.consume_chars_while(|c| c != ':') == "toto");
+        test_parser.consume_char();
+        assert!(test_parser.consume_chars_while(|c| c != ';') == " tata");
+    }
+
+    #[test]
+    fn test_consume_with_mods() {
+        let mut test_parser = TextParser::new(String::from("toto: tata;"));
+        assert!(test_parser.consume_sequence(|c| c != ':', |c| c == 'o', true) == "tt");
+    }
+
 }

@@ -8,13 +8,8 @@ struct Stylesheet {
 
 #[derive(Debug, Clone)]
 struct Rule {
-    selectors: Vec<Selector>,
+    selectors: Vec<SimpleSelector>,
     declarations: Vec<Declaration>,
-}
-
-#[derive(Debug, Clone)]
-enum Selector {
-    Simple(SimpleSelector),
 }
 
 #[derive(Debug, Clone)]
@@ -65,6 +60,7 @@ impl Color {
         Color { r, g, b }
     }
 }
+
 
 impl Declaration {
     fn new(name: String, value: String) -> Declaration {
@@ -131,6 +127,59 @@ impl CSSParser {
         declarations
     }
 
+
+    fn parse_simple_selector(&mut self) -> SimpleSelector {
+        let mut selector =  SimpleSelector { tag_name: None, id: None, class: Vec::new() };
+
+        while !self.text_parser.eol() && self.text_parser.get_current_char() != ',' {
+            match self.text_parser.get_current_char() {
+                // handle id
+                '#' => {
+                    self.text_parser.consume_char();
+                    selector.id = Some(self.text_parser.consume_sequence(
+                        |c| (c != ',' && c != '.'),
+                        |c| c == ' ',
+                        false
+                    ));
+                }
+                '.' => {
+                    self.text_parser.consume_char();
+                    selector.class.push(self.text_parser.consume_sequence(
+                        |c| c != ',',
+                        |c| c == ' ',
+                        false
+                    ));
+                }
+                _ => {
+                    selector.tag_name = Some(self.text_parser.consume_chars_while(|c| c.is_alphanumeric()));
+                }
+            }
+        }
+
+        selector 
+    }
+
+
+    fn parse_selectors(&mut self) -> Vec<SimpleSelector> {
+        let mut selectors: Vec<SimpleSelector> = Vec::new();
+
+        while !self.text_parser.eol() && self.text_parser.get_current_char() != '{' {
+            match self.text_parser.get_current_char() {
+                ',' => {
+                    self.text_parser.consume_char();
+                    self.text_parser.remove_whitespaces();
+                }
+                _ => {
+                    selectors.push(self.parse_simple_selector());
+                }
+            }
+        }
+
+        selectors
+    }
+
+
+
     // fn parse_rule(&mut self) -> Rule {
     //     assert!(self.text_parser.consume_char() == '{');
     //     self.text_parser.remove_whitespaces();
@@ -168,6 +217,14 @@ mod tests {
         };
         assert!(test_declarations.get(0).unwrap().name == decl1.name);
         assert!(test_declarations.get(1).unwrap().name == decl2.name);
+    }
+
+    #[test]
+    fn test_selector_parsing() {
+        let test_input = "h1, p, div.toto, #param.sasa";
+        let mut css_parser = CSSParser::new(test_input.to_string());
+        let test_selectors = css_parser.parse_selectors();
+        dbg!(test_selectors);
 
     }
 }

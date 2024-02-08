@@ -1,5 +1,3 @@
-use std::io::Split;
-
 pub struct TextParser {
     position: usize,
     input: String,

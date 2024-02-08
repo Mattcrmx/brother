@@ -1,6 +1,5 @@
 use crate::parser::TextParser;
-use std::{f32, os::linux::raw, u8};
-
+use std::{f32, u8};
 
 #[derive(Debug, Clone)]
 struct Stylesheet {
@@ -54,7 +53,6 @@ struct CSSParser {
     text_parser: TextParser,
 }
 
-
 impl Color {
     fn from_hex_code(code: String) -> Color {
         // transform code string to color
@@ -68,9 +66,8 @@ impl Color {
     }
 }
 
-
 impl Declaration {
-    fn new (name: String, value: String) -> Declaration {
+    fn new(name: String, value: String) -> Declaration {
         let first_char = value.chars().next().unwrap();
 
         // test first character to see which type of value we'll return
@@ -108,7 +105,6 @@ impl Declaration {
     }
 }
 
-
 impl CSSParser {
     pub fn new(input: String) -> CSSParser {
         let text_parser = TextParser::new(input);
@@ -121,17 +117,13 @@ impl CSSParser {
 
         while !self.text_parser.eol() && self.text_parser.get_current_char() != '}' {
             self.text_parser.remove_whitespaces();
-            let name = self.text_parser.consume_sequence(
-                |c| c != ':',
-                |c| c == ' ',
-                true
-            );
-            
-            let value = self.text_parser.consume_sequence(
-                |c| c != ';',
-                |c| c == ' ',
-                true
-            );
+            let name = self
+                .text_parser
+                .consume_sequence(|c| c != ':', |c| c == ' ', true);
+
+            let value = self
+                .text_parser
+                .consume_sequence(|c| c != ';', |c| c == ' ', true);
 
             declarations.push(Declaration::new(name, value));
         }
@@ -165,11 +157,17 @@ mod tests {
         let test_input = "margin: auto; titi: toto;";
         let mut css_parser = CSSParser::new(test_input.to_string());
         let test_declarations = css_parser.parse_declarations();
-        let validation_declaration = Declaration {
+        let decl1 = Declaration {
             name: "margin".to_string(),
             value: Value::Keyword("auto".to_string()),
         };
-        // assert!(test_declaration.name == validation_declaration.name);
-        dbg!(test_declarations);
+
+        let decl2 = Declaration {
+            name: "titi".to_string(),
+            value: Value::Keyword("toto".to_string()),
+        };
+        assert!(test_declarations.get(0).unwrap().name == decl1.name);
+        assert!(test_declarations.get(1).unwrap().name == decl2.name);
+
     }
 }

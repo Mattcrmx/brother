@@ -19,10 +19,6 @@ pub struct DocumentTypeData {
     system_id: String,
 }
 
-#[derive(Debug, Clone)]
-pub struct ProcessingInstructionData {
-    target: String,
-}
 
 #[derive(Debug, Clone)]
 pub struct AttrData {
@@ -37,11 +33,10 @@ pub struct AttrData {
 
 #[derive(Debug, Clone)]
 pub enum NodeType {
-    Text(TextData),
+    Text(String),
     Element(ElementData),
     Comment(TextData),
     Attr(AttrData),
-    ProcessingInstruction(ProcessingInstructionData),
     DocumentType(DocumentTypeData),
 }
 
@@ -66,7 +61,7 @@ pub struct Document {
 pub fn text_node(data: String) -> Node {
     Node {
         children: Vec::new(),
-        node_type: NodeType::Text(TextData { data }),
+        node_type: NodeType::Text(data),
     }
 }
 
@@ -91,12 +86,6 @@ pub fn comment_node(data: String) -> Node {
     }
 }
 
-pub fn processing_instruction_node(data: String) -> Node {
-    Node {
-        children: Vec::new(),
-        node_type: NodeType::ProcessingInstruction(ProcessingInstructionData { target: data }),
-    }
-}
 
 pub fn attr_node(
     namespace_uri: String,

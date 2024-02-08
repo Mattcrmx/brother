@@ -21,13 +21,6 @@ impl HTMLParser {
         dom::text_node(self.text_parser.parse_text_data())
     }
 
-    fn parse_comment_node(&mut self) -> Node {
-        dom::comment_node(self.text_parser.parse_text_data())
-    }
-
-    fn parse_processing_instruction_node(&mut self) -> Node {
-        dom::processing_instruction_node(self.text_parser.parse_text_data())
-    }
 
     fn parse_nodes(&mut self) -> Vec<Box<Node>> {
         let mut nodes = Vec::new();

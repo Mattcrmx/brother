@@ -53,7 +53,7 @@ impl TextParser {
         while !self.eol() && predicate(self.get_current_char()) {
             result.push(self.consume_char());
         }
-        return result;
+        result
     }
 
     pub fn consume_sequence<F, G>(&mut self, predicate: F, discard: G, drop_last: bool) -> String
@@ -107,7 +107,7 @@ mod tests {
     fn test_whitespace_removal() {
         let mut test_parser = TextParser::new(String::from("    toto"));
         test_parser.remove_whitespaces();
-        assert!(test_parser.input[test_parser.position..] == String::from("toto"));
+        assert!(test_parser.input[test_parser.position..] == *"toto");
     }
 
     #[test]

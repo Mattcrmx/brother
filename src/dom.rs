@@ -82,7 +82,7 @@ pub fn element_node(
 pub fn comment_node(data: String) -> Node {
     Node {
         children: Vec::new(),
-        node_type: NodeType::Comment(TextData { data: data }),
+        node_type: NodeType::Comment(TextData { data }),
     }
 }
 
@@ -130,19 +130,19 @@ pub fn pretty_print_tree(root: Node) {
 
             // add carret for prettier print
 
-            if !(root.children.len() == 0) {
+            if !root.children.is_empty() {
                 let new_depth: usize = depth + 1;
 
                 visited.insert(node_repr);
 
                 for node in root.children.iter() {
-                    let carret = get_indentation_carret(&root_string, depth);
+                    let carret = get_indentation_carret(root_string, depth);
                     root_string.push_str(&carret);
 
                     dfs(node, root_string, visited, new_depth);
                 }
             } else {
-                root_string.push_str("\n");
+                root_string.push('\n');
             }
         }
     }
@@ -151,5 +151,5 @@ pub fn pretty_print_tree(root: Node) {
     let mut visited: HashSet<String> = HashSet::new();
     let depth: usize = 0;
     dfs(&root, &mut result_string, &mut visited, depth);
-    print!("{}\n", result_string);
+    println!("{}", result_string);
 }

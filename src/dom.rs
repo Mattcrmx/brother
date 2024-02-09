@@ -19,7 +19,6 @@ pub struct DocumentTypeData {
     system_id: String,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct AttrData {
     namespace_uri: String,
@@ -85,7 +84,6 @@ pub fn comment_node(data: String) -> Node {
         node_type: NodeType::Comment(TextData { data }),
     }
 }
-
 
 pub fn attr_node(
     namespace_uri: String,

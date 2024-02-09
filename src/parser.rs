@@ -4,11 +4,10 @@ pub struct TextParser {
 }
 
 impl TextParser {
-
     pub fn new(input: String) -> TextParser {
-        TextParser {position: 0, input}
+        TextParser { position: 0, input }
     }
-    
+
     pub fn eol(&self) -> bool {
         self.position >= self.input.len()
     }
@@ -77,7 +76,6 @@ impl TextParser {
         result
     }
 
-
     pub fn consume_pattern(&mut self, pat: String) -> String {
         // consume pattern and advances the position pointer
         let target_position = self.position + pat.len();
@@ -88,7 +86,6 @@ impl TextParser {
         }
         pat
     }
-
 
     pub fn remove_whitespaces(&mut self) {
         self.consume_chars_while(|c| c.is_whitespace());
@@ -115,7 +112,7 @@ mod tests {
         let mut test_parser = TextParser::new(String::from("toto"));
         assert!(test_parser.consume_char() == 't');
     }
-    
+
     #[test]
     #[should_panic(expected = "Trying to consume character when end of input is reached")]
     fn test_panic_eol() {
@@ -143,5 +140,4 @@ mod tests {
         let mut test_parser = TextParser::new(String::from("toto: tata;"));
         assert!(test_parser.consume_sequence(|c| c != ':', |c| c == 'o', true) == "tt");
     }
-
 }

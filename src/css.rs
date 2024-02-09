@@ -61,7 +61,6 @@ impl Color {
     }
 }
 
-
 impl Declaration {
     fn new(name: String, value: String) -> Declaration {
         let first_char = value.chars().next().unwrap();
@@ -127,9 +126,12 @@ impl CSSParser {
         declarations
     }
 
-
     fn parse_simple_selector(&mut self) -> SimpleSelector {
-        let mut selector =  SimpleSelector { tag_name: None, id: None, class: Vec::new() };
+        let mut selector = SimpleSelector {
+            tag_name: None,
+            id: None,
+            class: Vec::new(),
+        };
 
         while !self.text_parser.eol() && self.text_parser.get_current_char() != ',' {
             match self.text_parser.get_current_char() {
@@ -139,7 +141,7 @@ impl CSSParser {
                     selector.id = Some(self.text_parser.consume_sequence(
                         |c| (c != ',' && c != '.'),
                         |c| c == ' ',
-                        false
+                        false,
                     ));
                 }
                 '.' => {
@@ -147,18 +149,20 @@ impl CSSParser {
                     selector.class.push(self.text_parser.consume_sequence(
                         |c| c != ',',
                         |c| c == ' ',
-                        false
+                        false,
                     ));
                 }
                 _ => {
-                    selector.tag_name = Some(self.text_parser.consume_chars_while(|c| c.is_alphanumeric()));
+                    selector.tag_name = Some(
+                        self.text_parser
+                            .consume_chars_while(|c| c.is_alphanumeric()),
+                    );
                 }
             }
         }
 
-        selector 
+        selector
     }
-
 
     fn parse_selectors(&mut self) -> Vec<SimpleSelector> {
         let mut selectors: Vec<SimpleSelector> = Vec::new();
@@ -177,8 +181,6 @@ impl CSSParser {
 
         selectors
     }
-
-
 
     // fn parse_rule(&mut self) -> Rule {
     //     assert!(self.text_parser.consume_char() == '{');
@@ -225,6 +227,5 @@ mod tests {
         let mut css_parser = CSSParser::new(test_input.to_string());
         let test_selectors = css_parser.parse_selectors();
         dbg!(test_selectors);
-
     }
 }

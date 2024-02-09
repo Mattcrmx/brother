@@ -3,24 +3,23 @@ use crate::parser::TextParser;
 use std::collections::HashMap;
 
 pub struct HTMLParser {
-    text_parser: TextParser
+    text_parser: TextParser,
 }
 
 impl HTMLParser {
-
     pub fn new(input: String) -> HTMLParser {
         let text_parser = TextParser::new(input);
-        HTMLParser {text_parser}
+        HTMLParser { text_parser }
     }
 
     fn parse_tag_name(&mut self) -> String {
-        self.text_parser.consume_chars_while(|c| c.is_alphanumeric())
+        self.text_parser
+            .consume_chars_while(|c| c.is_alphanumeric())
     }
 
     fn parse_text_node(&mut self) -> Node {
         dom::text_node(self.text_parser.parse_text_data())
     }
-
 
     fn parse_nodes(&mut self) -> Vec<Box<Node>> {
         let mut nodes = Vec::new();

@@ -1,4 +1,4 @@
-pub mod dom;
-pub mod parser;
-pub mod html;
 pub mod css;
+pub mod dom;
+pub mod html;
+pub mod parser;

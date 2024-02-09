@@ -44,7 +44,7 @@ struct Color {
     b: u8,
 }
 
-struct CSSParser {
+pub struct CSSParser {
     text_parser: TextParser,
 }
 
@@ -110,19 +110,25 @@ impl CSSParser {
         // assume that the input has been sanitized before
         let mut declarations: Vec<Declaration> = Vec::new();
 
-        while !self.text_parser.eol() && self.text_parser.get_current_char() != '}' {
-            self.text_parser.remove_whitespaces();
-            let name = self
-                .text_parser
-                .consume_sequence(|c| c != ':', |c| c == ' ', true);
+        while !self.text_parser.eol() {
+            match self.text_parser.get_current_char() {
+                '}' => break,
+                ' ' => {
+                    self.text_parser.consume_char();
+                }
+                _ => {
+                    let name = self
+                        .text_parser
+                        .consume_sequence(|c| c != ':', |c| c == ' ', true);
 
-            let value = self
-                .text_parser
-                .consume_sequence(|c| c != ';', |c| c == ' ', true);
+                    let value = self
+                        .text_parser
+                        .consume_sequence(|c| c != ';', |c| c == ' ', true);
 
-            declarations.push(Declaration::new(name, value));
+                    declarations.push(Declaration::new(name, value));
+                }
+            }
         }
-
         declarations
     }
 
@@ -133,10 +139,10 @@ impl CSSParser {
             class: Vec::new(),
         };
 
-        while !self.text_parser.eol() && self.text_parser.get_current_char() != ',' {
+        while !self.text_parser.eol() {
             match self.text_parser.get_current_char() {
-                // handle id
                 '#' => {
+                    // id
                     self.text_parser.consume_char();
                     selector.id = Some(self.text_parser.consume_sequence(
                         |c| (c != ',' && c != '.'),
@@ -145,6 +151,7 @@ impl CSSParser {
                     ));
                 }
                 '.' => {
+                    // class
                     self.text_parser.consume_char();
                     selector.class.push(self.text_parser.consume_sequence(
                         |c| c != ',',
@@ -152,7 +159,16 @@ impl CSSParser {
                         false,
                     ));
                 }
+                ' ' => {
+                    // space separation
+                    self.text_parser.consume_char();
+                }
+                '{' | ',' => {
+                    // start the declaration
+                    break;
+                }
                 _ => {
+                    // otherwise tag name
                     selector.tag_name = Some(
                         self.text_parser
                             .consume_chars_while(|c| c.is_alphanumeric()),
@@ -167,12 +183,13 @@ impl CSSParser {
     fn parse_selectors(&mut self) -> Vec<SimpleSelector> {
         let mut selectors: Vec<SimpleSelector> = Vec::new();
 
-        while !self.text_parser.eol() && self.text_parser.get_current_char() != '{' {
+        while !self.text_parser.eol() {
             match self.text_parser.get_current_char() {
                 ',' => {
                     self.text_parser.consume_char();
                     self.text_parser.remove_whitespaces();
                 }
+                '{' => break,
                 _ => {
                     selectors.push(self.parse_simple_selector());
                 }
@@ -182,21 +199,17 @@ impl CSSParser {
         selectors
     }
 
-    // fn parse_rule(&mut self) -> Rule {
-    //     assert!(self.text_parser.consume_char() == '{');
-    //     self.text_parser.remove_whitespaces();
+    fn parse_rule(&mut self) -> Rule {
+        let selectors: Vec<SimpleSelector> = self.parse_selectors();
+        self.text_parser.remove_whitespaces();
+        assert!(self.text_parser.consume_char() == '{');
+        let declarations: Vec<Declaration> = self.parse_declarations();
 
-    //     let declarations = Vec::new();
-
-    //     while self.text_parser.get_current_char() != '}' {
-    //         declarations.push(self.parse_declaration());
-    //     }
-
-    //     Rule {
-    //         selectors: (),
-    //         declarations: declarations,
-    //     }
-    // }
+        Rule {
+            selectors,
+            declarations,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -227,5 +240,13 @@ mod tests {
         let mut css_parser = CSSParser::new(test_input.to_string());
         let test_selectors = css_parser.parse_selectors();
         dbg!(test_selectors);
+    }
+
+    #[test]
+    fn test_rule_parsing() {
+        let test_input = "h1, h2, h3 { margin: auto; color: #cc0000; }";
+        let mut css_parser = CSSParser::new(test_input.to_string());
+        let rule = css_parser.parse_rule();
+        dbg!(rule);
     }
 }

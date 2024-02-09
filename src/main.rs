@@ -1,19 +1,31 @@
+pub mod css;
 pub mod dom;
+pub mod html;
 pub mod parser;
+use css::CSSParser;
 use dom::{comment_node, pretty_print_tree, Node};
+use html::HTMLParser;
 
 fn main() {
-    let mut root: Node = comment_node(String::from("toto"));
-    let c1: Node = comment_node(String::from("titi"));
-    let mut c2: Node = comment_node(String::from("tata"));
-    let mut c3: Node = comment_node(String::from("tutu"));
-    let c4: Node = comment_node(String::from("tete"));
-
-    c3.add_child(c4);
-    c2.add_child(c3);
-
-    root.add_child(c2);
-    root.add_child(c1);
-
+    // html
+    let test_html = "<html>
+    <body>
+        <h1>Title</h1>
+        <div id='main' class='test'>
+            <p>Hello <em>world</em>!</p>
+        </div>
+    </body>
+</html>";
+    let mut html_parser = HTMLParser::new(test_html.to_string());
+    let root = html_parser.parse_document();
     pretty_print_tree(root);
+
+    // css
+    let test_stylesheet = "
+    h1, h2, h3 { margin: auto; color: #cc0000; }
+    div.note { margin-bottom: 20px; padding: 10px; }
+    #answer { display: none; }
+    ";
+    let mut css_parser = CSSParser::new(test_stylesheet.to_string());
+    // let stylesheet = css_parser.parse_stylesheet();
 }

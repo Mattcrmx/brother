@@ -2,7 +2,7 @@ use crate::parser::TextParser;
 use std::{f32, u8};
 
 #[derive(Debug, Clone)]
-struct Stylesheet {
+pub struct Stylesheet {
     rules: Vec<Rule>,
 }
 
@@ -204,11 +204,28 @@ impl CSSParser {
         self.text_parser.remove_whitespaces();
         assert!(self.text_parser.consume_char() == '{');
         let declarations: Vec<Declaration> = self.parse_declarations();
+        assert!(self.text_parser.consume_char() == '}');
 
         Rule {
             selectors,
             declarations,
         }
+    }
+
+    pub fn parse_stylesheet(&mut self) -> Stylesheet {
+        let mut rules: Vec<Rule> = Vec::new();
+        while !self.text_parser.eol() {
+            match self.text_parser.get_current_char() {
+                '\n' => {
+                    self.text_parser.consume_char();
+                }
+                _ => {
+                    self.text_parser.remove_whitespaces();
+                    rules.push(self.parse_rule());
+                }
+            }
+        }
+        Stylesheet { rules }
     }
 }
 
@@ -248,5 +265,15 @@ mod tests {
         let mut css_parser = CSSParser::new(test_input.to_string());
         let rule = css_parser.parse_rule();
         dbg!(rule);
+    }
+
+    #[test]
+    fn test_stylesheet_parsing() {
+        let test_input = "h1, h2, h3 { margin: auto; color: #cc0000; }
+        div.note { margin-bottom: 20px; padding: 10px; }
+        #answer { display: none; }";
+        let mut css_parser = CSSParser::new(test_input.to_string());
+        let stylesheet = css_parser.parse_stylesheet();
+        dbg!(stylesheet);
     }
 }

@@ -61,6 +61,22 @@ impl Color {
     }
 }
 
+impl SimpleSelector {
+    pub fn specificity(&self) -> (usize, usize, usize) {
+        let ids = match &self.id {
+            Some(ident) => ident.len(),
+            None => 0
+        };
+        let classes = self.class.len();
+        let type_selector = match &self.tag_name {
+            Some(_) => 1,
+            None => 0
+        };
+        (ids, classes, type_selector)
+    }
+}
+
+
 impl Declaration {
     fn new(name: String, value: String) -> Declaration {
         let first_char = value.chars().next().unwrap();

@@ -65,17 +65,16 @@ impl SimpleSelector {
     pub fn specificity(&self) -> (usize, usize, usize) {
         let ids = match &self.id {
             Some(ident) => ident.len(),
-            None => 0
+            None => 0,
         };
         let classes = self.class.len();
         let type_selector = match &self.tag_name {
             Some(_) => 1,
-            None => 0
+            None => 0,
         };
         (ids, classes, type_selector)
     }
 }
-
 
 impl Declaration {
     fn new(name: String, value: String) -> Declaration {
@@ -161,7 +160,7 @@ impl CSSParser {
                     // id
                     self.text_parser.consume_char();
                     selector.id = Some(self.text_parser.consume_sequence(
-                        |c| (c != ',' && c != '.'),
+                        |c| (c != ',' && c != '.' && c != '{'),
                         |c| c == ' ',
                         false,
                     ));
@@ -170,7 +169,7 @@ impl CSSParser {
                     // class
                     self.text_parser.consume_char();
                     selector.class.push(self.text_parser.consume_sequence(
-                        |c| c != ',',
+                        |c| c != ',' && c != '{',
                         |c| c == ' ',
                         false,
                     ));
@@ -276,8 +275,24 @@ mod tests {
     }
 
     #[test]
-    fn test_rule_parsing() {
+    fn test_rule_parsing_multi_selectors() {
         let test_input = "h1, h2, h3 { margin: auto; color: #cc0000; }";
+        let mut css_parser = CSSParser::new(test_input.to_string());
+        let rule = css_parser.parse_rule();
+        dbg!(rule);
+    }
+
+    #[test]
+    fn test_rule_parsing_selector_with_cls() {
+        let test_input = "div.note { margin-bottom: 20px; padding: 10px; }";
+        let mut css_parser = CSSParser::new(test_input.to_string());
+        let rule = css_parser.parse_rule();
+        dbg!(rule);
+    }
+
+    #[test]
+    fn test_rule_parsing_selector_with_id() {
+        let test_input = "#answer { display: none; }";
         let mut css_parser = CSSParser::new(test_input.to_string());
         let rule = css_parser.parse_rule();
         dbg!(rule);

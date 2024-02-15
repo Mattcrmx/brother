@@ -1,4 +1,4 @@
-use crate::dom::{self, element_node, Document, Node};
+use crate::dom::{Document, Node};
 use crate::parser::TextParser;
 use std::collections::HashMap;
 
@@ -18,7 +18,7 @@ impl HTMLParser {
     }
 
     fn parse_text_node(&mut self) -> Node {
-        dom::text_node(self.text_parser.parse_text_data())
+        Node::text(self.text_parser.parse_text_data())
     }
 
     fn parse_nodes(&mut self) -> Vec<Box<Node>> {
@@ -49,7 +49,7 @@ impl HTMLParser {
         assert!(self.parse_tag_name() == tag_name);
         assert!(self.text_parser.consume_char() == '>');
 
-        element_node(tag_name, attrs, children)
+        Node::element(tag_name, attrs, children)
     }
 
     fn parse_element_attributes(&mut self) -> HashMap<String, String> {
@@ -85,7 +85,7 @@ impl HTMLParser {
         assert!(document_tag == "html");
 
         let all_nodes = self.parse_nodes();
-        let root = element_node(document_tag, document_attributes, all_nodes);
+        let root = Node::element(document_tag, document_attributes, all_nodes);
         Document::new(root)
     }
 }

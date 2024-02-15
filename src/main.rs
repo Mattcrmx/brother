@@ -3,7 +3,6 @@ pub mod dom;
 pub mod html;
 pub mod parser;
 use css::CSSParser;
-use dom::{comment_node, pretty_print_tree, Node};
 use html::HTMLParser;
 
 fn main() {

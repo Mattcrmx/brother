@@ -37,6 +37,34 @@ impl Node {
     pub fn add_child(&mut self, child: Node) {
         self.children.push(Box::new(child));
     }
+
+    pub fn element(
+        tag_name: String,
+        attributes: HashMap<String, String>,
+        children: Vec<Box<Node>>,
+    ) -> Node {
+        Node {
+            children,
+            node_type: NodeType::Element(ElementData {
+                tag_name,
+                attributes,
+            }),
+        }
+    }
+
+    pub fn text(data: String) -> Node {
+        Node {
+            children: Vec::new(),
+            node_type: NodeType::Text(data),
+        }
+    }
+
+    pub fn comment(data: String) -> Node {
+        Node {
+            children: Vec::new(),
+            node_type: NodeType::Comment(data),
+        }
+    }
 }
 
 pub struct Document {
@@ -50,34 +78,6 @@ impl Document {
 
     pub fn display(&self) {
         pretty_print_tree(&self.root);
-    }
-}
-
-pub fn text_node(data: String) -> Node {
-    Node {
-        children: Vec::new(),
-        node_type: NodeType::Text(data),
-    }
-}
-
-pub fn element_node(
-    tag_name: String,
-    attributes: HashMap<String, String>,
-    children: Vec<Box<Node>>,
-) -> Node {
-    Node {
-        children,
-        node_type: NodeType::Element(ElementData {
-            tag_name,
-            attributes,
-        }),
-    }
-}
-
-pub fn comment_node(data: String) -> Node {
-    Node {
-        children: Vec::new(),
-        node_type: NodeType::Comment(data),
     }
 }
 

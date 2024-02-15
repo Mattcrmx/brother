@@ -16,5 +16,5 @@ fn test_pretty_print() {
 
     root.add_child(c1);
     root.add_child(c2);
-    pretty_print_tree(root);
+    pretty_print_tree(&root);
 }

@@ -17,8 +17,8 @@ fn main() {
     </body>
 </html>";
     let mut html_parser = HTMLParser::new(test_html.to_string());
-    let root = html_parser.parse_document();
-    pretty_print_tree(root);
+    let document = html_parser.parse_document();
+    document.display();
 
     // css
     let test_stylesheet = "
@@ -27,5 +27,5 @@ fn main() {
     #answer { display: none; }
     ";
     let mut css_parser = CSSParser::new(test_stylesheet.to_string());
-    // let stylesheet = css_parser.parse_stylesheet();
+    let _stylesheet = css_parser.parse_stylesheet();
 }

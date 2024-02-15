@@ -2,41 +2,29 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
-pub struct TextData {
-    data: String,
-}
-
-#[derive(Debug, Clone)]
 pub struct ElementData {
     tag_name: String,
     attributes: HashMap<String, String>,
 }
 
-#[derive(Debug, Clone)]
-pub struct DocumentTypeData {
-    name: String,
-    public_id: String,
-    system_id: String,
-}
+impl ElementData {
+    pub fn id(&self) -> Option<&String> {
+        self.attributes.get("id")
+    }
 
-#[derive(Debug, Clone)]
-pub struct AttrData {
-    namespace_uri: String,
-    prefix: String,
-    local_name: String,
-    name: String,
-    value: String,
-    owner_element: ElementData,
-    specified: bool,
+    pub fn classes(&self) -> HashSet<&str> {
+        match self.attributes.get("class") {
+            Some(cls) => cls.split(' ').collect(),
+            None => HashSet::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 pub enum NodeType {
     Text(String),
     Element(ElementData),
-    Comment(TextData),
-    Attr(AttrData),
-    DocumentType(DocumentTypeData),
+    Comment(String),
 }
 
 #[derive(Debug, Clone)]
@@ -55,16 +43,13 @@ pub struct Document {
     root: Node,
 }
 
-impl ElementData {
-    pub fn id(&self) -> Option<&String> {
-        self.attributes.get("id")
+impl Document {
+    pub fn new(root: Node) -> Document {
+        Document { root }
     }
 
-    pub fn classes(&self) -> HashSet<&str> {
-        match self.attributes.get("class") {
-            Some(cls) => cls.split(' ').collect(),
-            None => HashSet::new(),
-        }
+    pub fn display(&self) {
+        pretty_print_tree(&self.root);
     }
 }
 
@@ -92,35 +77,8 @@ pub fn element_node(
 pub fn comment_node(data: String) -> Node {
     Node {
         children: Vec::new(),
-        node_type: NodeType::Comment(TextData { data }),
+        node_type: NodeType::Comment(data),
     }
-}
-
-pub fn attr_node(
-    namespace_uri: String,
-    prefix: String,
-    local_name: String,
-    name: String,
-    value: String,
-    owner_element: ElementData,
-    specified: bool,
-) -> Node {
-    Node {
-        children: Vec::new(),
-        node_type: NodeType::Attr(AttrData {
-            namespace_uri,
-            prefix,
-            local_name,
-            name,
-            value,
-            owner_element,
-            specified,
-        }),
-    }
-}
-
-pub fn document_tree(root_node: Node) -> Document {
-    Document { root: root_node }
 }
 
 fn get_indentation_carret(base: &str, depth: usize) -> String {
@@ -129,7 +87,7 @@ fn get_indentation_carret(base: &str, depth: usize) -> String {
     format!("\n{}|__ ", space)
 }
 
-pub fn pretty_print_tree(root: Node) {
+pub fn pretty_print_tree(root: &Node) {
     fn dfs(root: &Node, root_string: &mut String, visited: &mut HashSet<String>, depth: usize) {
         let node_repr: String = format!("{:?} ", root.node_type);
 
@@ -159,6 +117,6 @@ pub fn pretty_print_tree(root: Node) {
     let mut result_string = String::from("");
     let mut visited: HashSet<String> = HashSet::new();
     let depth: usize = 0;
-    dfs(&root, &mut result_string, &mut visited, depth);
+    dfs(root, &mut result_string, &mut visited, depth);
     println!("{}", result_string);
 }

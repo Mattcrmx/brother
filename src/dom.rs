@@ -55,7 +55,18 @@ pub struct Document {
     root: Node,
 }
 
-// constructors
+impl ElementData {
+    pub fn id(&self) -> Option<&String> {
+        self.attributes.get("id")
+    }
+
+    pub fn classes(&self) -> HashSet<&str> {
+        match self.attributes.get("class") {
+            Some(cls) => cls.split(' ').collect(),
+            None => HashSet::new(),
+        }
+    }
+}
 
 pub fn text_node(data: String) -> Node {
     Node {

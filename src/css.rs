@@ -13,10 +13,10 @@ struct Rule {
 }
 
 #[derive(Debug, Clone)]
-struct SimpleSelector {
-    tag_name: Option<String>,
-    id: Option<String>,
-    class: Vec<String>,
+pub struct SimpleSelector {
+    pub tag_name: Option<String>,
+    pub id: Option<String>,
+    pub class: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -26,19 +26,19 @@ struct Declaration {
 }
 
 #[derive(Debug, Clone)]
-enum Value {
+pub enum Value {
     Keyword(String),
     Length(f32, Unit),
     ColorValue(Color),
 }
 
 #[derive(Debug, Clone)]
-enum Unit {
+pub enum Unit {
     Px,
 }
 
 #[derive(Debug, Clone)]
-struct Color {
+pub struct Color {
     r: u8,
     g: u8,
     b: u8,

@@ -1,10 +1,29 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ElementData {
-    tag_name: String,
-    attributes: HashMap<String, String>,
+    pub tag_name: String,
+    pub attributes: HashMap<String, String>,
+}
+
+pub trait Representation {
+    fn repr(&self) -> String;
+}
+
+impl Representation for ElementData {
+    fn repr(&self) -> String {
+        let mut repr = String::from("Element ");
+        repr.push_str(&self.tag_name);
+        let attrs = self
+            .attributes
+            .iter()
+            .map(|(k, v)| format!("{}:{}", k, v))
+            .collect::<Vec<String>>()
+            .join(", ");
+        repr.push_str(&attrs);
+        repr
+    }
 }
 
 impl ElementData {
@@ -20,17 +39,30 @@ impl ElementData {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NodeType {
     Text(String),
     Element(ElementData),
     Comment(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Node {
     pub children: Vec<Box<Node>>,
     pub node_type: NodeType,
+}
+
+impl Representation for Node {
+    fn repr(&self) -> String {
+        let mut representation = String::from("Node ");
+        let node_type_repr = match &self.node_type {
+            NodeType::Element(elem) => elem.repr(),
+            NodeType::Text(txt) => format!("Text {}", txt),
+            NodeType::Comment(cmt) => format!("Comment {}", cmt),
+        };
+        representation.push_str(&node_type_repr);
+        representation
+    }
 }
 
 impl Node {
@@ -66,7 +98,6 @@ impl Node {
         }
     }
 }
-
 pub struct Document {
     root: Node,
 }
